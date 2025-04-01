@@ -59,15 +59,17 @@ app.get("/callback", async (req, res) => {
             <h2>✅ Connexion réussie !</h2>
             <p>Tu peux maintenant retourner dans Nexyo.</p>
             <script>
-  // Envoie le token à la fenêtre d’origine (Nexyo)
-  window.opener.postMessage(
-    { spotify_token: '${access_token}' },
-    '*'
-  );
+  if (window.opener) {
+    window.opener.postMessage(
+      { spotify_token: '${access_token}' },
+      '*'
+    );
+  }
   setTimeout(() => {
     window.close();
   }, 1000);
 </script>
+
           </body>
         </html>
       `);
