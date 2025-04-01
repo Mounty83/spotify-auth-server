@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 8888;
 
 app.use(cors({
-    origin: "*",
+    origin: "*", 
   }));
   
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
@@ -54,7 +54,7 @@ app.get("/callback", async (req, res) => {
     const access_token = response.data.access_token;
 
     // Redirige vers Nexyo avec le token dans l’URL (à récupérer dans React)
-    res.redirect(`http://localhost:5173/?access_token=${access_token}`);
+    res.redirect(`http://localhost/?access_token=${access_token}`);
   } catch (err) {
     console.error("Erreur dans /callback :", err.response?.data || err.message);
     res.status(500).send("Internal Server Error");
