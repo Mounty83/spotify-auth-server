@@ -53,8 +53,22 @@ app.get("/callback", async (req, res) => {
 
     const access_token = response.data.access_token;
 
-    // Redirige vers Nexyo avec le token dans l’URL (à récupérer dans React)
-    res.redirect(`http://localhost/?access_token=${access_token}`);
+    res.send(`
+        <html>
+          <body style="background:#111;color:#fff;font-family:sans-serif;text-align:center;padding-top:80px">
+            <h2>✅ Connexion réussie !</h2>
+            <p>Tu peux maintenant retourner dans Nexyo.</p>
+            <script>
+              // On envoie le token à la fenêtre principale
+              window.localStorage.setItem('spotify_token', '${access_token}');
+              setTimeout(() => {
+                window.close();
+              }, 1500);
+            </script>
+          </body>
+        </html>
+      `);
+      
   } catch (err) {
     console.error("Erreur dans /callback :", err.response?.data || err.message);
     res.status(500).send("Internal Server Error");
