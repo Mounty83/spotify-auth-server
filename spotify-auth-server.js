@@ -47,7 +47,12 @@ app.get("/callback", async (req, res) => {
 
     const { access_token, refresh_token } = tokenRes.data;
 
-    res.redirect(`https://nexyo-app.onrender.com/?access_token=${access_token}`);
+    res.send(`
+        <script>
+          window.opener.postMessage({ access_token: '${access_token}' }, '*');
+          window.close();
+        </script>
+      `);      
 
   } catch (err) {
     console.error("Erreur lors du callback Spotify :", err.message);
