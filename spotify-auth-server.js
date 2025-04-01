@@ -6,9 +6,10 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
-const client_id = "db5c624249624897b9afc0063aa68560"; // 🔁 Remplace avec ton vrai Client ID
-const client_secret = "1325cce663634687ad18acb589912eaf"; // 🔁 Et ton vrai Client Secret
-const redirect_uri = "https://spotify-auth-server-v0ky.onrender.com/callback"; // 🔁 Ex : https://nexyo-spotify-auth.onrender.com/callback
+require("dotenv").config();
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
 
 app.get("/login", (req, res) => {
   const scope = [
@@ -46,7 +47,7 @@ app.get("/callback", async (req, res) => {
 
     const { access_token, refresh_token } = tokenRes.data;
 
-    res.redirect(`https://nexyo.app/callback?access_token=${access_token}&refresh_token=${refresh_token}`);
+    res.redirect(`http://localhost:5173/?access_token=${access_token}`);
     // ⬆️ Tu peux modifier cette redirection si tu veux retourner dans Nexyo avec un token
 
   } catch (err) {
