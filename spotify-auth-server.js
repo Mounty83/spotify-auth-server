@@ -1,4 +1,4 @@
-// spotify-auth-server.js – version Render prête
+// spotify-auth-server.js – version Render
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
@@ -47,8 +47,7 @@ app.get("/callback", async (req, res) => {
 
     const { access_token, refresh_token } = tokenRes.data;
 
-    res.redirect(`http://localhost:5173/?access_token=${access_token}`);
-    // ⬆️ Tu peux modifier cette redirection si tu veux retourner dans Nexyo avec un token
+    res.redirect(`https://nexyo-app.onrender.com/?access_token=${access_token}`);
 
   } catch (err) {
     console.error("Erreur lors du callback Spotify :", err.message);
