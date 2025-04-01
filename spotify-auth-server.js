@@ -1,68 +1,66 @@
-// spotify-auth-server.js – version Render
+require("dotenv").config();
 const express = require("express");
-const axios = require("axios");
 const cors = require("cors");
+const axios = require("axios");
+const qs = require("querystring");
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 8888;
 
-require("dotenv").config();
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI;
+app.use(cors({
+    origin: "*",
+  }));
+  
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 
 app.get("/login", (req, res) => {
-  const scope = [
+  const scopes = [
     "user-read-playback-state",
     "user-modify-playback-state",
     "user-read-currently-playing",
     "playlist-read-private"
-  ].join(" ");
+  ];
 
-  const authUrl = "https://accounts.spotify.com/authorize?" +
-    new URLSearchParams({
-      response_type: "code",
-      client_id,
-      scope,
-      redirect_uri,
-    }).toString();
+  const url = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(
+    REDIRECT_URI
+  )}&scope=${encodeURIComponent(scopes.join(" "))}&show_dialog=true`;
 
-  res.redirect(authUrl);
+  res.redirect(url);
 });
 
 app.get("/callback", async (req, res) => {
-  const code = req.query.code || null;
+  const code = req.query.code;
 
   try {
-    const tokenRes = await axios.post("https://accounts.spotify.com/api/token", new URLSearchParams({
-      code,
-      redirect_uri,
-      grant_type: "authorization_code"
-    }), {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: "Basic " + Buffer.from(client_id + ":" + client_secret).toString("base64")
+    const response = await axios.post(
+      "https://accounts.spotify.com/api/token",
+      qs.stringify({
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: REDIRECT_URI,
+      }),
+      {
+        headers: {
+          Authorization:
+            "Basic " +
+            Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64"),
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
       }
-    });
+    );
 
-    const { access_token, refresh_token } = tokenRes.data;
+    const access_token = response.data.access_token;
 
-    res.send(`
-        <script>
-          window.opener.postMessage({ access_token: '${access_token}' }, '*');
-          window.close();
-        </script>
-      `);      
-
+    // Redirige vers Nexyo avec le token dans l’URL (à récupérer dans React)
+    res.redirect(`http://localhost:5173/?access_token=${access_token}`);
   } catch (err) {
-    console.error("Erreur lors du callback Spotify :", err.message);
-    res.status(500).send("Erreur lors de l'authentification avec Spotify.");
+    console.error("Erreur dans /callback :", err.response?.data || err.message);
+    res.status(500).send("Internal Server Error");
   }
 });
-
-const PORT = process.env.PORT || 8888;
 
 app.listen(PORT, () => {
   console.log(`✅ Serveur Spotify Auth lancé sur le port ${PORT}`);
 });
-
